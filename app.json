@@ -12,8 +12,6 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.sohambiswas.arsonasentinel",
-      "googleServicesFile": "./android/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
