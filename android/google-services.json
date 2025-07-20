@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "768241820640",
+    "project_id": "arsonasentinel",
+    "storage_bucket": "arsonasentinel.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768241820640:android:3364e34dde54b4345f8185",
+        "android_client_info": {
+          "package_name": "com.sohambiswas.arsonasentinel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZBiaDgUJzgZBWdeI86HWVjiv8p-lA6jU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
