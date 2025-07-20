@@ -1,33 +1,43 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link, useRouter } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Keyboard,
+  KeyboardAvoidingView, // Added for loading indicator
+  Modal,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  View,
 } from "react-native";
+import { auth } from "../../utils/firebase";
 
 export default function ArsonaSignUpScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isFocused, setIsFocused] = useState({
     email: false,
-    password: false
+    password: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
   const buttonScale = new Animated.Value(1);
 
-  const handleFocus = (field:any) => setIsFocused(prev => ({ ...prev, [field]: true }));
-  const handleBlur = (field:any) => setIsFocused(prev => ({ ...prev, [field]: false }));
+  const handleFocus = (field: any) =>
+    setIsFocused((prev) => ({ ...prev, [field]: true }));
+  const handleBlur = (field: any) =>
+    setIsFocused((prev) => ({ ...prev, [field]: false }));
 
   const handlePressIn = () => {
     Animated.spring(buttonScale, {
@@ -45,8 +55,38 @@ export default function ArsonaSignUpScreen() {
     }).start();
   };
 
-  const handleSignUp = () => {
-    // Add your sign up logic here
+  const handleSignUp = async () => {
+    if (!email || !password) {
+      Alert.alert("Missing Fields", "Please enter both email and password.");
+      return;
+    }
+
+    setIsLoading(true); // Start loading
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+      console.log("✅ User registered:", user.email);
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      console.error("❌ Sign-up error:", error.message);
+      let message = "Something went wrong. Try again.";
+      if (error.code === "auth/email-already-in-use") {
+        message = "This email is already in use.";
+      } else if (error.code === "auth/invalid-email") {
+        message = "Invalid email address.";
+      } else if (error.code === "auth/weak-password") {
+        message = "Password should be at least 6 characters.";
+      }
+      Alert.alert("Sign-up Failed", message);
+    } finally {
+      setIsLoading(false); // Stop loading regardless of success or failure
+    }
   };
 
   return (
@@ -56,7 +96,26 @@ export default function ArsonaSignUpScreen() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
-          <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+          <StatusBar
+            barStyle="light-content"
+            backgroundColor="transparent"
+            translucent
+          />
+
+          {/* Loading Modal */}
+          <Modal
+            transparent={true}
+            animationType="fade"
+            visible={isLoading}
+            onRequestClose={() => {}}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <ActivityIndicator size="large" color="#FF6B35" />
+                <Text style={styles.loadingText}>Creating account...</Text>
+              </View>
+            </View>
+          </Modal>
 
           {/* Background Overlay */}
           <View style={styles.overlay} />
@@ -64,20 +123,24 @@ export default function ArsonaSignUpScreen() {
           <View style={styles.content}>
             {/* Logo/Title Section */}
             <View style={styles.header}>
-              <Ionicons name="shield-checkmark" size={48} color="#FF6B35" style={styles.logo} />
+              <Ionicons
+                name="shield-checkmark"
+                size={48}
+                color="#FF6B35"
+                style={styles.logo}
+              />
               <Text style={styles.title}>ARSONA{"\n"}SENTINEL</Text>
               <Text style={styles.subtitle}>Create New Account</Text>
             </View>
 
             {/* Auth Toggle */}
             <View style={styles.authToggle}>
-              <TouchableOpacity 
-                style={styles.toggleButton}
-                activeOpacity={0.8}
-              >
-                <Link href={"/(auth)/login"} style={styles.toggleButtonText}>LOGIN</Link>
+              <TouchableOpacity style={styles.toggleButton} activeOpacity={0.8}>
+                <Link href={"/(auth)/login"} style={styles.toggleButtonText}>
+                  LOGIN
+                </Link>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.toggleButton, styles.toggleActive]}
                 activeOpacity={0.8}
               >
@@ -87,10 +150,12 @@ export default function ArsonaSignUpScreen() {
 
             {/* Input Fields */}
             <View style={styles.inputContainer}>
-              <View style={[
-                styles.inputWrapper,
-                isFocused.email && styles.inputFocused
-              ]}>
+              <View
+                style={[
+                  styles.inputWrapper,
+                  isFocused.email && styles.inputFocused,
+                ]}
+              >
                 <Ionicons
                   name="mail-outline"
                   size={20}
@@ -105,15 +170,17 @@ export default function ArsonaSignUpScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  onFocus={() => handleFocus('email')}
-                  onBlur={() => handleBlur('email')}
+                  onFocus={() => handleFocus("email")}
+                  onBlur={() => handleBlur("email")}
                 />
               </View>
 
-              <View style={[
-                styles.inputWrapper,
-                isFocused.password && styles.inputFocused
-              ]}>
+              <View
+                style={[
+                  styles.inputWrapper,
+                  isFocused.password && styles.inputFocused,
+                ]}
+              >
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
@@ -127,10 +194,10 @@ export default function ArsonaSignUpScreen() {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
-                  onFocus={() => handleFocus('password')}
-                  onBlur={() => handleBlur('password')}
+                  onFocus={() => handleFocus("password")}
+                  onBlur={() => handleBlur("password")}
                 />
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.passwordToggle}
                 >
@@ -144,16 +211,19 @@ export default function ArsonaSignUpScreen() {
             </View>
 
             {/* Sign Up Button */}
-            <Animated.View style={[
-              styles.accessButton,
-              { transform: [{ scale: buttonScale }] }
-            ]}>
+            <Animated.View
+              style={[
+                styles.accessButton,
+                { transform: [{ scale: buttonScale }] },
+              ]}
+            >
               <TouchableOpacity
                 onPress={handleSignUp}
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
                 activeOpacity={0.7}
                 style={styles.buttonInner}
+                disabled={isLoading} // Disable button during loading
               >
                 <Text style={styles.accessButtonText}>CREATE ACCOUNT</Text>
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
@@ -162,7 +232,9 @@ export default function ArsonaSignUpScreen() {
 
             {/* QR Code Authentication */}
             <View style={styles.qrSection}>
-              <Text style={styles.qrText}>Or authenticate using your access QR</Text>
+              <Text style={styles.qrText}>
+                Or authenticate using your access QR
+              </Text>
               <TouchableOpacity style={styles.qrButton}>
                 <Ionicons name="qr-code-outline" size={28} color="#FF6B35" />
                 <Text style={styles.qrButtonText}>Scan QR</Text>
@@ -330,5 +402,24 @@ const styles = StyleSheet.create({
     color: "#FF6B35",
     fontSize: 16,
     fontWeight: "500",
+  },
+  // Add these new styles for the loading modal
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+  },
+  modalContent: {
+    backgroundColor: "#1e1e24",
+    padding: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    marginTop: 16,
+    fontSize: 16,
   },
 });

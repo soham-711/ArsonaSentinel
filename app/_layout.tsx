@@ -1,6 +1,8 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import InitialLayout from "./components/InitialLayout";
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "SpaceMono-Regular": require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -12,7 +14,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#1A1A1A" }}>
-        <Stack screenOptions={{ headerShown: false }} />
+        <InitialLayout/>
       </SafeAreaView>
     </SafeAreaProvider>
   );

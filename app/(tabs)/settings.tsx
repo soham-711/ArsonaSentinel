@@ -1,14 +1,20 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { signOut } from "firebase/auth";
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { auth } from "../../utils/firebase";
 
 const SystemStatus = () => {
   const [selectedRobot, setSelectedRobot] = useState("RS-001");
+  const router = useRouter();
 
   const systemStats = {
     networkStatus: "Online",
@@ -62,8 +68,39 @@ const SystemStatus = () => {
 
   const currentRobot = robotDiagnostics.find((r) => r.id === selectedRobot);
 
+  const handleLogout = async () => {
+    Alert.alert(
+      "Confirm Logout",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              await AsyncStorage.removeItem("user");
+              router.replace("/(auth)/login");
+            } catch (error) {
+              console.error("Logout failed:", error);
+              Alert.alert("Error", "Failed to log out. Please try again.");
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+    >
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>SYSTEM STATUS</Text>
@@ -248,17 +285,26 @@ const SystemStatus = () => {
             <Text style={styles.buttonText}>UPDATE ALL ROBOTS</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={[styles.cyberButton, styles.logoutButton]}
+          onPress={handleLogout}
+        >
+          <Text style={styles.buttonText}>LOGOUT</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
-export default SystemStatus;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0f0f0f",
+  },
+  scrollContent: {
+    paddingBottom: 40, // Add padding at the bottom for the logout button
   },
   content: {
     padding: 16,
@@ -469,4 +515,11 @@ const styles = StyleSheet.create({
     color: "#ff6600",
     fontWeight: "600",
   },
+  logoutButton: {
+    marginTop: 20,
+    backgroundColor: "#ff000020",
+    borderColor: "#ff0033",
+  },
 });
+
+export default SystemStatus;
