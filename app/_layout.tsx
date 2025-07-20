@@ -13,7 +13,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#1A1A1A" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#0f0f12" }}>
         <InitialLayout/>
       </SafeAreaView>
     </SafeAreaProvider>

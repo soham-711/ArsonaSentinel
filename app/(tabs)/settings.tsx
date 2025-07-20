@@ -301,7 +301,7 @@ const SystemStatus = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#0f0f12",
   },
   scrollContent: {
     paddingBottom: 40, // Add padding at the bottom for the logout button

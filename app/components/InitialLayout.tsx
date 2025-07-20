@@ -9,6 +9,7 @@ export default function InitialLayout() {
   const router = useRouter();
 
   useEffect(() => {
+     
     const checkAuthState = async () => {
       try {
         const user = await AsyncStorage.getItem("user");
